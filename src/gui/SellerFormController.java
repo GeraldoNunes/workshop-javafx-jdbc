@@ -1,9 +1,11 @@
 package gui;
 
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -125,6 +127,8 @@ public class SellerFormController implements Initializable {
 		}
 	}
 
+	// o método getFormData pega os dados preenchidos no formulário
+	// e carrega um objeto com esses dados, retornando o objeto no final
 	private Seller getFormData() {
 		Seller obj = new Seller();
 
@@ -132,11 +136,34 @@ public class SellerFormController implements Initializable {
 
 		obj.setId(Utils.tryParseToInt(txtId.getText()));
 
+		// esse if avisa se o campo do nome estiver vazio
 		if (txtName.getText() == null || txtName.getText().trim().equals("")) {
 			exception.addError("name", "Field can't be empty");
 		}
 		obj.setName(txtName.getText());
 
+		// esse if avisa se o campo do email estiver vazio
+		if (txtEmail.getText() == null || txtEmail.getText().trim().equals("")) {
+			exception.addError("email", "Field can't be empty");
+		}
+		obj.setEmail(txtEmail.getText());
+
+		// aqui trata a hora
+		if (dpBirthDate.getValue() == null) {
+			exception.addError("birthDate", "Field can't be empty");
+		} else {
+			Instant instant = Instant.from(dpBirthDate.getValue().atStartOfDay(ZoneId.systemDefault()));
+			obj.setBirthDate(Date.from(instant));
+		}
+
+		// esse if avisa se o campo do email estiver vazio
+		if (txtBaseSalary.getText() == null || txtBaseSalary.getText().trim().equals("")) {
+			exception.addError("baseSalary", "Field can't be empty");
+		}
+		obj.setBaseSalary(Utils.tryParseToDouble(txtBaseSalary.getText()));
+
+		obj.setDepartment(comboBoxDepartment.getValue());
+		
 		if (exception.getErrors().size() > 0) {
 			throw exception;
 		}
@@ -162,7 +189,7 @@ public class SellerFormController implements Initializable {
 		Constraints.setTextFieldDouble(txtBaseSalary);
 		Constraints.setTextFieldMaxLength(txtEmail, 60);
 		Utils.formatDatePicker(dpBirthDate, "dd/MM/yyyy");
-		
+
 		initializeComboBoxDepartment();
 	}
 
@@ -178,11 +205,11 @@ public class SellerFormController implements Initializable {
 		if (entity.getBirthDate() != null) {
 			dpBirthDate.setValue(LocalDate.ofInstant(entity.getBirthDate().toInstant(), ZoneId.systemDefault()));
 		}
-		if (entity.getDepartment() == null) {  // esse if else é pra aparecer um combobox mostrando o 1 dp quando for inserir novo usuário
-			comboBoxDepartment.getSelectionModel().selectFirst();		
-		}
-		else {		
-		comboBoxDepartment.setValue(entity.getDepartment());
+		if (entity.getDepartment() == null) { // esse if else é pra aparecer um combobox mostrando o 1 dp quando for
+												// inserir novo usuário
+			comboBoxDepartment.getSelectionModel().selectFirst();
+		} else {
+			comboBoxDepartment.setValue(entity.getDepartment());
 		}
 	}
 
@@ -195,12 +222,29 @@ public class SellerFormController implements Initializable {
 		comboBoxDepartment.setItems(obsList);
 	}
 
+	// ESSE METODO TESTA CADA UM DOS POSSÍVEIS ERROS E SETA
+	// O VALOR DO LABOL CORRESPONDENTE
 	private void setErrorMessages(Map<String, String> errors) {
 		Set<String> fields = errors.keySet();
 
+		// se achar o erro no nome vai lá no campo
+		// de erro de nome e escreve o erro
 		if (fields.contains("name")) {
 			labelErrorName.setText(errors.get("name"));
 		}
+
+		if (fields.contains("email")) {
+			labelErrorEmail.setText(errors.get("email"));
+		}
+
+		if (fields.contains("baseSalary")) {
+			labelErrorBaseSalary.setText(errors.get("baseSalary"));
+		}
+
+		if (fields.contains("birthDate")) {
+			labelErrorBirthDate.setText(errors.get("birthDate"));
+		}
+
 	}
 
 	private void initializeComboBoxDepartment() {
